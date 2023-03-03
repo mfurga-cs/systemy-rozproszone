@@ -16,7 +16,6 @@ def send_message(sender_nick: str, message: str) -> None:
 
 def handle_tcp_client(conn, addr):
   global CLIENTS
-  global NEXT_ID
 
   nick = conn.recv(1024).decode()
   if nick in CLIENTS:

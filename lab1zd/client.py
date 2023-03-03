@@ -14,7 +14,6 @@ PORT = 4444
 
 # Globals.
 TCP_SOCK = None
-MULTI_SOCK = None
 NICK = None
 
 ASCII_ART = """
@@ -63,16 +62,14 @@ def start_tcp_connection():
   Thread(target=recv_tcp).start()
 
 def recv_multi():
-  global MULTI_SOCK
-
-  MULTI_SOCK = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-  MULTI_SOCK.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-  MULTI_SOCK.bind((MULTI_HOST, MULTI_PORT))
+  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+  sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+  sock.bind((MULTI_HOST, MULTI_PORT))
   mreq = struct.pack("4sl", socket.inet_aton(MULTI_HOST), socket.INADDR_ANY)
-  MULTI_SOCK.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+  sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
   while True:
-    data = MULTI_SOCK.recvfrom(1024)[0].decode()
+    data = sock.recvfrom(1024)[0].decode()
     if len(data) > 0:
       print_message(data)
 
