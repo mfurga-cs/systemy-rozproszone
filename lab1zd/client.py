@@ -45,7 +45,6 @@ def send_udp(message: str) -> None:
 
 def send_multicast(message: str) -> None:
   sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-  sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 32)
   sock.sendto(f"{NICK}\0{message}".encode(), (MULTI_HOST, MULTI_PORT))
 
 def send_tcp(message: str) -> None:
@@ -100,6 +99,9 @@ def main() -> None:
         send_multicast(message)
       else:
         send_tcp(message)
+
+      print(f"\033[1A[{NICK}] {message}\033[K")
+
     except KeyboardInterrupt:
       TCP_SOCK.shutdown(socket.SHUT_RDWR)
       TCP_SOCK.close()
