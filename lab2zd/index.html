@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weather checker</title>
+
+  <style type="text/css">
+    body {
+      width: 700px;
+      margin: 0 auto;
+      font-size: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 5px;
+      border: 1px solid #ddd;
+    }
+
+    input[type=submit] {
+      background: #4d75fe;
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+
+    input[type=submit]:hover {
+      cursor: pointer;
+    }
+
+    p, li, ol, ul {
+      margin: 10px 0;
+    }
+
+    #error {
+      color: red;
+      display: none;
+    }
+
+    #result {
+      display: none;
+    }
+
+  </style>
+
+  <script type="text/javascript">
+    window.addEventListener("load", () => {
+      const form = document.getElementById("form");
+      const result = document.getElementById("result");
+
+      const city = document.getElementById("city");
+      const date_from = document.getElementById("date_from");
+      const date_to = document.getElementById("date_to");
+
+      const error = document.getElementById("error");
+      const average = document.getElementById("average");
+      const minimum = document.getElementById("minimum");
+      const maximum = document.getElementById("maximum");
+      const list = document.getElementById("list");
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        let params = new URLSearchParams({
+          city: city.value,
+          date_from: date_from.value,
+          date_to: date_to.value
+        });
+
+        fetch("http://localhost:5000/weather?" + params)
+        .then((response) => {
+          if (response.status != 200) {
+            return Promise.reject(response);
+          }
+          return response.json();
+        })
+        .then((data) => {
+            average.innerHTML = data["average"];
+            minimum.innerHTML = data["minimum"];
+            maximum.innerHTML = data["maximum"];
+
+            list.innerHTML = "";
+            for (row of data["data"]) {
+              list.innerHTML += "<li>" + row["date"] + " (" + row["temp"] + "&#xb0; C)</li>";
+            }
+
+            error.style.display = "none";
+            result.style.display = "block";
+            console.log("data!!!");
+        })
+        .catch((response) => {
+          response = response.json().then((json) => {
+            error.innerHTML = json["message"];
+            error.style.display = "block";
+            result.style.display = "none";
+          });
+        });
+      });
+    });
+  </script>
+</head>
+<body>
+
+  <h1>Weather checker</h1>
+
+  <form id="form">
+    <label for="fname">City:</label><br>
+    <input type="text" id="city" name="city" value="Warsaw"><br><br>
+
+    <label for="lname">Date from:</label><br>
+    <input type="date" id="date_from" name="date_from" value="2022-03-01"><br><br>
+
+    <label for="lname">Date to:</label><br>
+    <input type="date" id="date_to" name="date_to" value="2022-03-08"><br><br>
+
+    <input type="submit" value="Check!">
+  </form>
+
+  <div id="result">
+    <p>Average temperature: <span id="average">12</span>&#xb0; C</p>
+    <p>Maximum temperature: <span id="maximum">23</span>&#xb0; C</p>
+    <p>Minimum temperature: <span id="minimum">34</span>&#xb0; C</p><br>
+    <p>Avg temperature by days:</p>
+
+    <ul id="list">
+      
+    </ul>
+  </div>
+  <p id="error"></p>
+</body>
+</html>
