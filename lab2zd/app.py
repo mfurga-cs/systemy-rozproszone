@@ -9,6 +9,8 @@ from random import randint
 
 app = Flask(__name__, template_folder=".")
 
+API_KEY = "EYiEZRiqj1"
+
 def generate_mock_data(status, date_from, date_to):
   date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
   date_to = datetime.strptime(date_to, "%Y-%m-%d").date()
@@ -87,12 +89,19 @@ def index():
 
 @app.route("/weather")
 def weather():
+  key = request.args.get("key")
   city = request.args.get("city")
   date_from = request.args.get("date_from")
   date_to = request.args.get("date_to")
 
+  if key is None:
+    return jsonify({"message": "Key param is empty."}), 401
+
+  if key != API_KEY:
+    return jsonify({"message": "Invalid key."}), 401
+
   if city is None or date_from is None or date_to is None:
-    return jsonify({"message": "city, date_from, date_to are required"}), 400
+    return jsonify({"message": "city, date_from, date_to are required."}), 400
 
   data1 = get_weatherapi(city, date_from, date_to)
   data2 = get_visualcrossing(city, date_from, date_to)
