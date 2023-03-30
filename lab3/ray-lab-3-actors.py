@@ -43,6 +43,7 @@ ray.init(logging_level=logging.ERROR)
 
 CALLERS=["A","B","C"]
 
+
 @ray.remote
 class MethodStateCounter :
     def __init__(self) :
@@ -85,6 +86,8 @@ for _ in range(5):
 
 # Fetch the count of all callers
 print(ray.get(worker_invoker.get_all_invoker_state.remote()))
+
+import sys
 
 # Note that we did not have to reason about where and how the actors are scheduled.
 # We did not worry about the socket connection or IP addresses where these actors
@@ -152,9 +155,9 @@ print([worker.remote(param_server) for _ in range(3)])
 # Now, let's iterate over a loop and query the Parameter Server as the
 # workers are running independently and updating the gradients
 
-for _i in range(20):
-    print(f"Updated params: {ray.get(param_server.get_params.remote())}")
-    time.sleep(1)
+#for _i in range(20):
+#    print(f"Updated params: {ray.get(param_server.get_params.remote())}")
+#    time.sleep(1)
 
 # Tree of Actors Pattern
 # A common pattern used in Ray libraries Ray Tune, Ray Train, and RLlib
@@ -298,3 +301,34 @@ while True :
 # Implement calculating pi as a combination of actor (which keeps the
 # state of the progress of calculating pi as it approaches its final value)
 # and a task (which computes candidates for pi)
+
+from fractions import Fraction
+
+@ray.remote
+class PiWorker:
+  def __init__(self, times: int):
+    self.times = times
+    self.count = 0
+
+  def work(self):
+    for _ in range(self.times):
+      x = random.random()
+      y = random.random()
+      if x * x + y * y <= 1:
+        self.count += 1
+    return Fraction(self.count, self.times)
+
+@ray.remote
+class PiSupervisor:
+  def __init__(self, times=100, workers=10):
+    self.workers = [PiWorker.remote(times) for _ in range(workers)]
+
+  def start(self):
+    result = [worker.work.remote() for worker in self.workers]
+    return ray.get(result)
+
+supervisor = PiSupervisor.remote()
+result = supervisor.start.remote()
+
+print(ray.get(result))
+

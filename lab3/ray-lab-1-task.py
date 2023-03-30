@@ -59,21 +59,23 @@ ray.init(logging_level=logging.ERROR)
 #ray.init(address='auto', ignore_reinit_error=True, logging_level=logging.ERROR)
 
 # Let's invoke the regular function
-assert regular_function() == 1
+#assert regular_function() == 1
 
 # Let's invoke the remote function.
-obj_ref = remote_function.remote()
-print(obj_ref)
+#obj_ref = remote_function.remote()
+#print(obj_ref)
 
-assert ray.get(obj_ref) == 1
+#assert ray.get(obj_ref) == 1
+
+import sys
 
 # Serial execution in Python with no parallelism
 #
 # Invocations of regular_function in a comprehension loop happens serially:
 
 # These are executed one at a time, back-to-back, in a list comprehension
-results = [regular_function() for _ in range(10)]
-assert sum(results) == 10
+#results = [regular_function() for _ in range(10)]
+#assert sum(results) == 10
 
 # Parallel execution in Python with Ray
 #
@@ -82,8 +84,9 @@ assert sum(results) == 10
 # Executing these functions, in comprehension list, happens at the same time in the background,
 # and we get the results using ray.get.
 
-results = [remote_function.remote() for _ in range(10)]
-assert sum(ray.get(results)) == 10
+#results = [remote_function.remote() for _ in range(10)]
+#assert sum(ray.get(results)) == 10
+
 
 # Define a function as a Ray task to read an array
 @ray.remote
@@ -114,11 +117,11 @@ def sum_array(arr1: np.array) -> int:
 # Read both arrays.
 # Use the func_name.remote(args) extention to invoke a remote Ray Task
 
-obj_ref_arr1 = read_array.remote(os.path.abspath("data/file_1.txt"))
-print(f"array 1: {obj_ref_arr1}")
+#obj_ref_arr1 = read_array.remote(os.path.abspath("data/file_1.txt"))
+#print(f"array 1: {obj_ref_arr1}")
 
-obj_ref_arr2 = read_array.remote(os.path.abspath("data/file_2.txt"))
-print(f"array 2: {obj_ref_arr2}")
+#obj_ref_arr2 = read_array.remote(os.path.abspath("data/file_2.txt"))
+#print(f"array 2: {obj_ref_arr2}")
 
 # Add both arrays
 # Let's add our two arrays by calling the remote method. Note: We are sending
@@ -129,25 +132,25 @@ print(f"array 2: {obj_ref_arr2}")
 # Ray scheduler is aware of where these object references reside or who owns them,
 # so it will schedule this remote task on node on the worker process for data locality.
 
-result_obj_ref = add_array.remote(obj_ref_arr1, obj_ref_arr2)
-print(result_obj_ref)
+#result_obj_ref = add_array.remote(obj_ref_arr1, obj_ref_arr2)
+#print(result_obj_ref)
 
 # Fetch the result
 
 # This will end task if not finished will block during .get(object_ref)
 
-result = ray.get(result_obj_ref)
-print(f"Result: add arr1 + arr2: \n {result}")
+#result = ray.get(result_obj_ref)
+#print(f"Result: add arr1 + arr2: \n {result}")
 
 # Add the array elements within an np.array and get the sum. Note that we are
 # sending ObjRefs as arguments to the function. Ray will resolve or fetch the
 # value of these arrays.
 
-sum_1 = ray.get(sum_array.remote(obj_ref_arr1))
-sum_2 = ray.get(sum_array.remote(obj_ref_arr2))
+#sum_1 = ray.get(sum_array.remote(obj_ref_arr1))
+#sum_2 = ray.get(sum_array.remote(obj_ref_arr2))
 
-print(f'Sum of arr1: {sum_1}')
-print(f'Sum of arr2: {sum_2}')
+#print(f'Sum of arr1: {sum_1}')
+#print(f'Sum of arr2: {sum_2}')
 
 # Example 3: Generating Fibonnaci series
 # Let's define two functions: one runs locally or serially, the other runs on
@@ -177,17 +180,49 @@ def run_local(sequence_size):
     return results
 
 import cProfile
-print('local run')
-cProfile.run("run_local(100000)")
+#print('local run')
+#cProfile.run("run_local(100000)")
 
 # Distributed on a Ray cluster
 def run_remote(sequence_size):
     results = ray.get([generate_fibonacci_distributed.remote(sequence_size) for _ in range(os.cpu_count())])
     return results
-print('remote run')
-cProfile.run("run_remote(100000)")
+#print('remote run')
+#cProfile.run("run_remote(100000)")
 
-ray.shutdown()
 
 # Excercises 1.1)Try using local bubble sort and remote bubble sort,
 # show difference
+
+import random
+
+def bubble_sort(arr):
+  n = len(arr)
+  for i in range(n):
+    for j in range(1, n - i):
+      if arr[j - 1] > arr[j]:
+        arr[j - 1], arr[j] = arr[j], arr[j - 1]
+
+def gen_random_array(sz):
+  return [random.randint(-100, 100) for _ in range(sz)]
+
+def sort_arrs(no: int):
+  for _ in range(no):
+    arr = gen_random_array(100)
+    bubble_sort(arr)
+
+def sort_local(no):
+  sort_arrs(no)
+
+@ray.remote
+def sort_remote(no):
+  sort_arrs(no)
+
+print("local run")
+cProfile.run("sort_local(1000)")
+
+print("remote run")
+cProfile.run("sort_remote.remote(1000)")
+
+ray.shutdown()
+
