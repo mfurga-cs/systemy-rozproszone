@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option java_package = "stubs";
+
+package common;
+
+message Empty {}
+
+enum Location {
+  LIVINGROOM = 0;
+  KITCHEN = 1;
+  BATHROOM = 2;
+  BEDROOM = 3;
+  GARAGE = 4;
+}
+

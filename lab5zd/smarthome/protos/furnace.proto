@@ -1,0 +1,21 @@
+/*
+  Furnace IDL.
+*/
+
+syntax = "proto3";
+import "common.proto";
+
+option java_package = "stubs";
+
+package furnace;
+
+message Furnace {
+  int32 currentTemp = 1;
+  bool isWorking = 2;
+}
+
+service FurnaceService {
+  rpc Get(common.Empty) returns (Furnace);
+  rpc Set(Furnace) returns (common.Empty);
+}
+

@@ -1,0 +1,31 @@
+/*
+  Light switch IDL.
+*/
+
+syntax = "proto3";
+import "common.proto";
+
+option java_package = "stubs";
+
+package lightswitch;
+
+message LightSwitch {
+  uint32 id = 1;
+  common.Location location = 2;
+  bool state = 3;  /* true - ON, 0 - OFF */
+}
+
+message ListResponse {
+  repeated LightSwitch lightSwitches = 1;
+}
+
+message Request {
+  uint32 id = 1;
+}
+
+service LightSwitchService {
+  rpc List(common.Empty) returns (ListResponse);
+  rpc Get(Request) returns (LightSwitch);
+  rpc Toggle(Request) returns (common.Empty);
+}
+

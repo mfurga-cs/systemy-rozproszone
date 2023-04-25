@@ -1,0 +1,30 @@
+/*
+  Temperature sensor IDL.
+*/
+
+syntax = "proto3";
+import "common.proto";
+
+option java_package = "stubs";
+
+package tempsensor;
+
+message TempSensor {
+  uint32 id = 1;
+  common.Location location = 2;
+  int32 temperature = 3;
+}
+
+message ListResponse {
+  repeated TempSensor sensors = 1;
+}
+
+message GetRequest {
+  uint32 id = 1;
+}
+
+service TempSensorService {
+  rpc List(common.Empty) returns (ListResponse);
+  rpc Get(GetRequest) returns (TempSensor);
+}
+
