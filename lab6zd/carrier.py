@@ -26,9 +26,17 @@ def callback(channel, method, properties, body):
 
   time.sleep(1)
 
-  print("done", end="\n\n")
+  channel.basic_publish(exchange="",
+                        routing_key=properties.reply_to,
+                        properties=pika.BasicProperties(
+                          correlation_id = properties.correlation_id
+                        ),
+                        body="ok")
+
   channel.basic_ack(delivery_tag=method.delivery_tag,
                     multiple=False)
+  print("done", end="\n\n")
+
 
 def main(name, order_types):
   connection = pika.BlockingConnection(
